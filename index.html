@@ -29,16 +29,21 @@
         animateTitle();
 
         const bgm = document.getElementById('bgm');
+        const musicEvents = ['pointerdown', 'touchstart', 'touchend', 'click', 'keydown'];
 
-        function startMusic() {
-            bgm.play().catch(() => {});
-            window.removeEventListener('pointerdown', startMusic);
-            window.removeEventListener('touchstart', startMusic);
-            window.removeEventListener('keydown', startMusic);
+        function stopMusicRetry() {
+            musicEvents.forEach(ev => window.removeEventListener(ev, startMusic));
         }
 
-        window.addEventListener('pointerdown', startMusic);
-        window.addEventListener('touchstart', startMusic);
-        window.addEventListener('keydown', startMusic);
+        function startMusic() {
+            const attempt = bgm.play();
+            if (attempt && attempt.then) {
+                attempt.then(stopMusicRetry).catch(() => {});
+            } else {
+                stopMusicRetry();
+            }
+        }
+
+        musicEvents.forEach(ev => window.addEventListener(ev, startMusic, { passive: true }));
 
     </script>
